@@ -1,0 +1,8 @@
+tabWidth: 2
+useTabs: false
+semi: false # only add semicolons at the beginning of lines that may introduce ASI failures
+singleQuote: true
+trailingComma: "es5" # only add trailing commas where valid in es5 such as Array, Object and so on
+bracketSpacing: true # like { foo: bar }
+bracketSameLine: false # put the ending mark `>` of a HTML-like (HTML, JSX, VueTemplate) element that includes many properties and each property in a separate line at the beginning on the next new line (does not apply to self closing elements)
+arrowParens: "always"
