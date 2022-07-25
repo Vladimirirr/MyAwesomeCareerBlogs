@@ -1,4 +1,4 @@
-## JavaScript 字符集
+## JavaScript 字符编码
 
 JavaScript 引擎内部以**UTF-16**编码存储字符。
 
@@ -23,18 +23,18 @@ ES6 的 str.codePointAt(Index)：同 str.charCodeAt 方法，还能准确识别�
 案例：
 
 ```js
-console.log("𠮷a".charCodeAt(0)); // 55362 只返回了该字符的代理对的前半部分
-console.log("𠮷a".charCodeAt(1)); // 57271 只返回了该字符的代理对的后半部分
-console.log("𠮷a".charCodeAt(2)); // 97
-console.log("𠮷a".charCodeAt(3)); // NaN
-console.log("𠮷a".codePointAt(0)); // 134071 返回了完整的该字符的代理对
-console.log("𠮷a".codePointAt(1)); // 57271 尝试识别代理对失败，返回这2个字节代表的码点
-console.log("𠮷a".codePointAt(2)); // 97
-console.log("𠮷a".codePointAt(3)); // undefined
-console.log("𠮷a".charAt(0)); // 乱码
-console.log("𠮷a".charAt(1)); // 乱码
-console.log("𠮷a".charAt(2)); // 'a'
-console.log("𠮷a".charAt(3)); // ''
+console.log('𠮷a'.charCodeAt(0)) // 55362 只返回了该字符的代理对的前半部分
+console.log('𠮷a'.charCodeAt(1)) // 57271 只返回了该字符的代理对的后半部分
+console.log('𠮷a'.charCodeAt(2)) // 97
+console.log('𠮷a'.charCodeAt(3)) // NaN
+console.log('𠮷a'.codePointAt(0)) // 134071 返回了完整的该字符的代理对
+console.log('𠮷a'.codePointAt(1)) // 57271 尝试识别代理对失败，返回这2个字节代表的码点
+console.log('𠮷a'.codePointAt(2)) // 97
+console.log('𠮷a'.codePointAt(3)) // undefined
+console.log('𠮷a'.charAt(0)) // 乱码
+console.log('𠮷a'.charAt(1)) // 乱码
+console.log('𠮷a'.charAt(2)) // 'a'
+console.log('𠮷a'.charAt(3)) // ''
 ```
 
 ## 补充

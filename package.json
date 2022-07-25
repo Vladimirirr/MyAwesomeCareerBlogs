@@ -4,6 +4,7 @@
   "description": "大学四年学习的知识总结，从【博客园】备份而来。",
   "main": "index.js",
   "scripts": {
+    "updateBlogs2": "node blogs2/updateDocs.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

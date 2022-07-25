@@ -1,19 +1,4 @@
-## All
-
-1. 类是有行为的数据，闭包是有数据的行为。
-2. 字体由贝塞尔曲线描述
-3. 只要`flex-wrap`的值是换行，那么`align-content`就能起作用，即便实际上没发生换行
-
-## 区分 space-between 和 space-around
-
-space-between: Items/Lines display with equal spacing between them
-space-around: Items/Lines display with equal spacing around them
-Items: justify-content
-Lines: align-content
-
-## 区分 align-content 和 align-items
-
-This can be confusing, but align-content determines the spacing between lines, while align-items determines how the items as a whole are aligned within the container. When there is only one line, align-content has no effect.
+# 事件循环
 
 ## 微任务
 
@@ -34,18 +19,18 @@ queueMicrotask 提案的起稿：https://github.com/fergald/docs/blob/master/exp
 ```
 
 ```js
-div1.addEventListener("click", (e) => {
+div1.addEventListener('click', (e) => {
   queueMicrotask(() => {
-    console.log("micro in div1");
-  });
-  console.log("div1");
-});
-div2.addEventListener("click", (e) => {
+    console.log('micro in div1')
+  })
+  console.log('div1')
+})
+div2.addEventListener('click', (e) => {
   queueMicrotask(() => {
-    console.log("micro in div2");
-  });
-  console.log("div2");
-});
+    console.log('micro in div2')
+  })
+  console.log('div2')
+})
 ```
 
 1. 手动点击 div2，div2 -> micro in div2 -> div1 -> micro in div1
@@ -57,9 +42,9 @@ div2.addEventListener("click", (e) => {
 
 ```js
 let nextClick = new Promise((resolve) => {
-  alink.addEventListener("click", resolve);
-});
-nextClick.then((e) => e.preventDefault());
+  alink.addEventListener('click', resolve)
+})
+nextClick.then((e) => e.preventDefault())
 ```
 
 1. 手动点击超链接，都只有第一次能阻止默认行为，因为 Promise 是单决议
