@@ -1,7 +1,7 @@
 {
   "name": "myawesomecareerblogs",
   "version": "1.0.0",
-  "description": "大学四年学习的知识总结，从【博客园】备份而来。",
+  "description": "我的学习笔记。",
   "main": "index.js",
   "scripts": {
     "updateBlogs2": "node blogs2/updateDocs.js",
