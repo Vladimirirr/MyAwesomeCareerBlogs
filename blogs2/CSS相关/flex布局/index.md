@@ -13,4 +13,4 @@ This can be confusing, but align-content determines the spacing between lines, w
 
 ## 其他
 
-只要`flex-wrap`的值是换行，那么`align-content`就能起作用，即便实际上没发生换行
+只要`flex-wrap`的值是换行，那么`align-content`就能起作用，即便实际上没发生换行。
