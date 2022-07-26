@@ -4,6 +4,7 @@
   "description": "我的学习笔记。",
   "main": "index.js",
   "scripts": {
+    "updateBlogs": "node blogs/updateDocs.js",
     "updateBlogs2": "node blogs2/updateDocs.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

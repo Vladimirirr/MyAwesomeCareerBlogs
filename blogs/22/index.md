@@ -140,4 +140,4 @@ void showList(SequenceList *L){
 
 ![image](./imgs/1.png)
 
-> 2020-01-18 18:34
+> 2020-01-18
