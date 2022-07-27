@@ -1,14 +1,56 @@
 # uniapp 基本思想
 
-## 开发小程序的基本思想（简单描述）
+## 开发小程序的基本思想（以微信小程序为例）
 
-> 以微信小程序为例，下面的小程序指的都是微信小程序，Vue 版本为 2.x
+**下面的小程序指的都是微信小程序，且 uniapp 选择 Vue2.6.10 的版本。**
+
+### 微信小程序基本架构概述
+
+**微信小程序的本质是一个【与微信高度耦合】且【基于微信高度优化】的 WebView。**
+
+通常，webview 指代一个完整的浏览器内核，包括了【JS 引擎】和【渲染引擎】。
+
+起初，微信对它内置的 webview 暴露了一个名叫`wx`的`JSBridge`接口，能够唤起微信的原生功能，比如：
+
+```js
+wx.previewImages({
+  // 唤起微信原生的图片浏览器
+  default: './fruit.jpg',
+  imgs: ['./banana.jpg', './apple.jpg'],
+  success: () => {},
+  error: () => {},
+})
+```
+
+传统网页的【JS 执行】和【渲染】是互斥关系，又由于移动端性能普遍较低（当时是 2015 年，移动端性能都不高），长时间执行的 JS 脚本会使得界面没响应，严重影响用户体验，所以，当时微信小程序提出将【JS 执行】和【渲染】独立出来到各自的线程中，并发运行。
+
+由于【JS 引擎】独立出来了，意味着它变成了一个很纯粹的 JS 解释器，也就意味着在微信小程序的 JS 代码里无法访问任何与 dom 和 bom 相关的方法，也就使得著名的 jQuery 无法在小程序上运行，同时，iOS 端的 JavaScriptCore 和 Node.js 的 V8 也不尽相同，有些 npm 包可能无法正常运行。
+
+不同平台对应的 webview：
+
+| 平台           | 逻辑层         | 渲染层                     |
+| -------------- | -------------- | -------------------------- |
+| iOS            | JavaScriptCore | WKWebView                  |
+| Android        | V8             | 基于 Chromium WebView 定制 |
+| 微信开发者工具 | NWJS           | Chrome WebView             |
+
+### 概述
 
 uniapp = 数据使用 vue 管理 + 视图依旧（也只能）由小程序管理
 
-uniapp = 编译时（`.vue`转为`.wxml .wxss .js .json`，等） + 运行时（代理事件、生命周期，等）
+uniapp = 编译时（将 vue 编写的项目转成符合微信小程序格式的项目） + 运行时（代理小程序的相关行为到对应的 vue 方法，比如代理小程序的事件和生命周期钩子）
 
-小程序的 setData 相当于 React 的 setState，但是连续多次的 setData 不会合并，而且小程序的逻辑层和视图层相互独立，两者使用消息管道通信（会经过 native 层），所以每次 setData 都需要消耗很多的资源和时间。
+小程序的 setData 用法与 React 的 setState 相同，但是小程序的 setData 是同步的，每次 setData 都会触发一次更新，也就导致了连续多次的 setData 不会合并。
+
+一次 setData 的过程：
+
+1. 【逻辑层】生成新的 vdom，新旧 vdom 进行 patch，触发副作用（比如组件的生命周期钩子）
+2. 【逻辑层 -> 渲染层】整理出需要更新的节点以及它们对应的 patch -> 编码数据 -> 传输数据（IPC 通信）
+3. 【渲染层】接受数据 -> 解码数据 -> 把全部的 patch 应用到 webview 对应的真实 dom
+
+又小程序的逻辑层和视图层相互独立，两者使用 IPC 通信，数据需要经过【编码】 -> 【传输】 -> 【解码】，所以每次 setData 都是一次高成本操作。
+
+如果渲染层正忙，那么多出的更新将保存在消息队列里进行等待。
 
 要提高性能，优化 setData 是一个关键，有如下一些优化手段：
 
@@ -44,16 +86,41 @@ uniapp = 编译时（`.vue`转为`.wxml .wxss .js .json`，等） + 运行时（
    })
    ```
 
-运行时的代理：
+3. 与渲染不相关的数据不要放在 data 里面，可以直接定义在组件实例上，比如`this.staticStore = { key: '' }`
+4. 和 React 一样，setData 会引起自身和其全部子组件的更新，要控制最小的更新范围，避免过深的状态提升，也可以结合 CSS 的`contain`一起使用来控制更新范围
+5. 当小程序切到后台时（onHide 事件）避免 setData 操作，所有需要的更新先记下来，当小程序再次切回前台（onShow 事件）时一次性 setData
 
-1. 代理小程序的事件（在编译时就被处理了，写在 vue 模板的事件被编译为对应的小程序事件名，再统一代理到事件处理方法）
-   比如 vue 的
+运行时的代理举例：
+
+1. 代理小程序的事件（在编译时就被处理了，写在 vue 模板的事件被编译为对应的小程序事件名，再统一代理到事件处理方法`__e`）
+   比如 vue 的：
    `<button @click="titleChange()">clickme</button>`
-   编译微信小程序是
+   编译的微信小程序：（在`data-event-opts`上记录【小程序事件名与它对应的 vue 的 methods 定义的事件处理器】的映射表）
    `<button data-event-opts="{{[['tap',[['titleChange']]]]}}" bindtap="__e">clickme</button>`
 2. 代理小程序的生命周期（在编译时就被处理了，比如在小程序的 onReady 钩子里还将触发 vue 的 mounted 钩子）
-3. diff 变化的数据，对最小数据变化量统一 setData
+3. 代理数据的变化，拦截 Vue2 在`flushSchedulerQueue`时的`watcher.run`（因为 vdom 和真实 dom 的 patch 不由 Vue 完成，而是由小程序自己完成）方法，转而对当前 watcher 对应的组件发生改变的数据的最小量统一进行一次小程序的 setData
 
 总结：
 
-改写 vue 的 patch 方法，只 patch 数据，不需要 VNode 也不需要 render 函数了，删减了原本 vue 将近 30% 的代码量，最终依旧使用微信小程序自己的 setData 实现小程序试图的刷新，uniapp 改写的 patch 就是找出最小的数据变化量（即 json diff），一次性地 setData。
+改写 vue 的 patch 方法，只 patch 数据，不需要 VNode 也不需要 render 函数了，删减了原本 vue 将近 30% 的代码量，最终依旧使用微信小程序自己的 setData 实现小程序视图的刷新，uniapp 改写的 patch 就是找出最小的数据变化量（即 json diff），一次性地 setData。
+
+### `uniapp(vue2) -> 微信小程序` 打包输出的项目源码分析
+
+[See document.](./uniappVue2ToWX.md)
+
+## 开发原生 APP 的基本思想
+
+uniapp 对原生 APP 支持方式：
+
+```mermaid
+flowchart LR
+
+displayWebview["渲染方式：webview"] --> vueDSL["vue2/3完整支持"] --> jsBridge["JSBridge"] --> native
+
+displayWeex["渲染方式：weex"] --> weexDSL["weex语法，与vue相似"] --> native
+
+native["原生能力"]
+
+```
+
+**weex 就是 vue 版本的 ReactNative**。
