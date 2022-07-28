@@ -13,7 +13,7 @@ const createMarkdownContent = (list, title) => {
     (name, i) => `${i + 1}. [查看：${name}](./${name}/index.md)`
   )
   const space = '\u0020'
-  const gapLine = '\n'.repeat(2)
+  const gapLine = '\r\n'.repeat(2)
   const result = `#${space}${title}${gapLine}${lineList.join(gapLine)}${gapLine}`
   return result
 }

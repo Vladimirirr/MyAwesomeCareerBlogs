@@ -25,7 +25,7 @@ const createMarkdownContent = async (list, title) => {
   })
   lineList = await Promise.all(lineList)
   const space = '\u0020'
-  const gapLine = '\n'.repeat(2)
+  const gapLine = '\r\n'.repeat(2)
   const result = `#${space}${title}${gapLine}${lineList.join(gapLine)}${gapLine}`
   return result
 }
