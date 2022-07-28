@@ -4,25 +4,25 @@
 HBuilder 3.4.18.20220630
 uniapp 编译器版本：
 
-- "@dcloudio/uni-template-compiler": "^2.0.1-34920220630001" 内置了 vue-template-compiler，用于编译.vue 文件
-- "@dcloudio/uni-mp-vue": "^2.0.1-34920220630001" 修改版的 vue，下面简称 uni-vue2
+- "@dcloudio/uni-template-compiler": "^2.0.1-34920220630001" 依赖 vue-template-compiler，用于编译 uniapp 方言的 .vue 文件
+- "@dcloudio/uni-mp-vue": "^2.0.1-34920220630001" 修改版的 vue，下面简称 uni-vue2，其中 mp = miniprogram，即微信小程序
 - "@dcloudio/uni-mp-weixin": "^2.0.1-34920220630001" uniapp 在微信小程序的运行时（运行时代理）
 
-微信开发者工具 1.06.2206090，基本库 >= 1.4.4
+微信开发者工具 1.06.2206090，基本库 2.25.1
 
 ## uniapp(vue2) 空模板项目
 
 `/pages/index/index.vue`: 普通页面，vue 单文件的`template`、`script`和`style`将生成对应的`.wxml`、`.js`和`.wxss`微信小程序文件
 
-`/main.js`: uniapp 的入口，初始化 vue 实例，定义全局组件、过滤器、混入，安装插件，等等的初始化操作
+`/main.js`: uniapp 的入口，定义 Vue 全局组件、过滤器、混入，安装插件，以及其他初始化操作，最终初始化 vue 实例
 
-`/App.vue`: uniapp 的页面容器，所有的页面都在此组件下进行切换，它本身不渲染任何页面（它没有`template`，即便写了`template`也会被忽略），`script`能定义应用级别的生命周期（比如`onLaunch`），`style`定义全局样式
+`/App.vue`: `script`的代码将当作微信小程序的 app.js，`style`的代码将当作微信小程序的 app.wxss
 
 `/pages.json`: 页面路由配置表
 
-`/uni.scss`: 基础的样式变量，相当于`:root{ --uni-color-success: #4cd964; }`
+`/uni.scss`: 基础的样式变量，比如`$primary-color: #3F51B5`，此文件不会被打包，它只在编译时做静态替换
 
-`/manifest.json`: 应用的配置文件，里面包含了公共配置、h5+app（uniapp 开发原生 APP）和各端小程序的配置集合，微信小程序的配置是`mp-weixin`字段
+`/manifest.json`: 应用的配置文件，里面包含了公共配置、APP 和各端小程序的配置集合，微信小程序的配置项为`mp-weixin`
 
 `/unpackage/dist`: 打包的目录地址
 
@@ -36,9 +36,11 @@ uniapp 编译器版本：
 
 对 main.js 和 App.vue 的详细说明：
 
-main.js 和 App.vue 的`script`字段都将编译到`/common/main.js`，就是单独把 main.js（和它的引用，即 App.vue）打包到 main.js。
+main.js 和 App.vue 的`script`都将编译到`/common/main.js`，**此 main.js 会调用微信小程序的 `App` 构造函数**，以初始化整个微信小程序。
 
-App.vue 的`style`字段将编译到`/common/main.wxss`，这里包含一些能共用的全局样式（比如`.w100: { width: 100vw; }`），不要使用`scoped`。
+由于 App.vue 的 `script` 导出的对象最终作为小程序 App 构造函数的参数，故 `script` 导出的对象要是合法的 App 构造函数的配置对象。
+
+App.vue 的`style`字段将编译到`/common/main.wxss`（此文件会被 app.wxss 导入），这里包含一些能共用的全局样式（比如`.flexCol: { display: flex; flex-direction: column; align-items: center; justify-content: space-between; }`），不要使用`scoped`。
 
 ## 空模板编译的结果
 
@@ -56,7 +58,7 @@ App.vue 的`style`字段将编译到`/common/main.wxss`，这里包含一些能�
 3. 基于 vue2 改装的适用于微信小程序的`@dcloudio/vue-cli-plugin-uni/packages/mp-vue`框架，即 uni-vue2
 4. 一个 vue2-sfc-compiler，`@dcloudio/vue-cli-plugin-uni/packages/vue-loader`
 
-`/common/main.js`: 入口，来自于 uniapp 项目的 main.js，一个 App.vue 的容器实例，它将作为微信小程序的 app.js，在这里会调用微信小程序的 App 构造函数来初始化应用
+`/common/main.js`: 入口，将相当于微信小程序的 app.js，在这里会调用微信小程序的 App 构造函数来初始化整个小程序
 
 `/common/main.wxss`: 全局样式，来自于 uniapp 项目的 App.vue 的 style，以及其他页面不带 scoped 的样式
 
@@ -101,7 +103,7 @@ App.vue 的`style`字段将编译到`/common/main.wxss`，这里包含一些能�
 </template>
 ```
 
-根据此 template 对应的 render 函数编译得到：
+根据此 template 的 render 函数编译得到微信小程序的模板：
 
 ```xml
 <view class="content">
@@ -115,7 +117,7 @@ App.vue 的`style`字段将编译到`/common/main.wxss`，这里包含一些能�
     >
       {{title+'!'}}
     </text>
-    <!-- attr里面的{{}}相当于vue的v-bind:attr -->
+    <!-- attr里面的{{}}相当于vue的v-bind:attr，{{}}里面的值将当作表达式 -->
     <!-- [['tap',[['titleChange']]]].toString() === 'tap,titleChange' -->
     <!-- button的data-event-opts值是'tap,titleChange' -->
     <button data-event-opts="{{[['tap',[['titleChange']]]]}}" bindtap="__e">clickme</button>
@@ -131,17 +133,40 @@ App.vue 的`style`字段将编译到`/common/main.wxss`，这里包含一些能�
 </view>
 ```
 
+事件注册的格式：
+
+```js
+;[
+  [
+    'tap',
+    [
+      ['handler1', [arg1, arg2]],
+      ['handler2', []],
+    ],
+  ],
+]
+// tap事件有两个处理器，handler1接收两个参数，handler不接收任何参数
+```
+
+这样的写法（事件信息以字符串的形式挂载在元素的 dataset 上），导致了在 wxml 定义的事件处理器的参数必须是合法的 JSON（能字符串化）。
+不过一些无法被 JSON 的值可以放在 data 上，再在模板里使用这个值，比如：
+
+```vue
+<view @tap="handler1(10, key)"></view>
+```
+
+编译得到的对应 wxml 的元素的 dataset 的值为`tap,handler1,10,$0;key`，当微信小程序发生了 tap 事件，就由`__e`事件代理执行，而在事件代理里面，通过 `vueInstance.$wx`得到对应的微信组件实例，再用`vueInstance.key`的值替换 $0，最终执行 vue 组件里的 methods 对应的方法。
+
 每个 vue 的 script 编译行为：根据 script 导出的组件，对此组件执行来自于 uni-mp-weixin 的 createPage 方法（传入此组件）：
 
 ```js
-const createPage = (vuePageOptions) => Component(parsePage(vuePageOptions))
+const createPage = (vuePageOptions) => Page(parsePage(vuePageOptions))
 ```
 
 parsePage：得到一个符合微信小程序 Component 构造器的配置项
-Component：得到一个微信小程序的组件
-现代的微信小程序的页面也是一个组件，可以使用组件表示页面，但是此时需要在此页面的 json 配置文件里面写明`usingComponent: true`
+Page：得到一个微信小程序的页面组件
 
-所以 index.vue 打包的 index.js 里的第一个依赖模块直接使用 IIFE 执行了一次微信小程序的 Component 构造函数，注册了此组件。
+所以 index.vue 打包的 index.js 里的第一个依赖模块直接使用 IIFE 执行了一次微信小程序的 Page 构造函数。
 
 `/common/main.js` 的第一个也是 IIFE，它将执行 createApp 方法：
 
@@ -160,8 +185,7 @@ parseApp：得到符合 App 构造函数的配置项
 ```xml
 <!--index.wxml-->
 <view class="indexContainer">
-  <button bindtap="tap11">测试setData</button>
-  <button bindtap="tap22" class="username">{{username}}</button>
+  <button bindtap="tapHandler">测试setData</button>
 </view>
 ```
 
@@ -169,33 +193,20 @@ parseApp：得到符合 App 构造函数的配置项
 
 ```js
 // index.js
-const app = getApp() // get app instance from `app.js` in the top level of the project
+const app = getApp() // 得到小程序全局唯一的 App 实例，即 App 构造函数返回的对象
 
 Page({
   data: {
     username: 'nat',
   },
-  tap11() {
-    const originValue = this.data.username
+  tapHandler() {
     this.setData({
+      // 1. 同步改变当前组件实例的username值
+      // 2. 异步发送一个更新请求到渲染线程（渲染线程对每个更新请求都单独处理，不会合并多个更新请求，当渲染线程正忙时，多出来的更新请求将排队等待）
       username: 'jack',
     })
-    const testResult =
-      originValue === this.username
-        ? 'setData update by async'
-        : 'setData update by sync'
-    console.log(testResult) // output 'setData update by sync'
-    // 微信小程序的setData都是同步调用！！！
-  },
-  async tap22(e) {
-    console.log(e)
-    console.log(await this.getUserAge())
   },
   onLoad() {},
-  async getUserAge() {
-    // 模拟一下 api
-    return 22
-  },
 })
 ```
 
@@ -225,11 +236,11 @@ Page({
 
 `/pages/demo2/demo2.js.json.wxml.wxss`: 同上，也可以是和目录名相同的四个文件
 
-`/utils/utils.js`: 一些工具方法，使用`module.exports`导出语法
+`/utils/utils.js`: 一些工具方法，使用 cjs 模块语法
 
 `/app.js`: 小程序启动的入口，执行`App({ ...options })`初始化小程序
 
-`/app.json`: 小程序的全局配置，比如导航栏的颜色
+`/app.json`: 小程序的全局配置，比如【页面路由表】和【导航栏的颜色】
 
 `/app.wxss`: 小程序的全局样式
 
@@ -261,8 +272,11 @@ Page({
 
 ## 自定义组件
 
-微信自定义的组件需要在它的 json 配置文件写明`component: true`，表示是一个自定义组件。
-需要导入的自定义组件也要在 json 配置文件写明，可以直接在 wxml 里面使用：
+微信自定义的组件需要在它的 json 配置文件写明`component: true`，表示是一个自定义组件（自定义组件渲染的元素有一个 is 属性，表明了此组件的来源（路径地址））。
+
+微信的页面组件（构造函数 Page）也属于自定义组件（构造函数 Component），只不过它拥有页面级别的生命周期钩子和方法，但没有自定义组件灵活，而且现在当自定义组件充当页面时，微信也会向它提供页面级别的生命周期钩子和方法。
+
+需要导入自定义组件的组件（或页面）要在 json 配置文件写明，随后便可以直接在 wxml 里面使用：
 
 ```json
 {
