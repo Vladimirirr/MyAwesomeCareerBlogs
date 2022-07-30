@@ -4,17 +4,90 @@
 HBuilder 3.4.18.20220630
 uniapp 编译器版本：
 
-- "@dcloudio/uni-template-compiler": "^2.0.1-34920220630001" 依赖 vue-template-compiler，用于编译 uniapp 方言的 .vue 文件
+- "@dcloudio/uni-template-compiler": "^2.0.1-34920220630001" 依赖 vue-template-compiler，用于编译 uniapp 版本的 .vue 文件
 - "@dcloudio/uni-mp-vue": "^2.0.1-34920220630001" 修改版的 vue，下面简称 uni-vue2，其中 mp = miniprogram，即微信小程序
 - "@dcloudio/uni-mp-weixin": "^2.0.1-34920220630001" uniapp 在微信小程序的运行时（运行时代理）
 
 微信开发者工具 1.06.2206090，基本库 2.25.1
 
+## 原生微信小程序的空模板目录
+
+`/pages/demo/index.js.json.wxml.wxss`: demo 页面的目录，都以 index 命名的四个文件：
+`index.wxml`
+
+```xml
+<!--index.wxml-->
+<view class="indexContainer">
+  <button bindtap="tapHandler">测试setData</button>
+</view>
+```
+
+`index.js`
+
+```js
+// index.js
+const app = getApp() // 得到小程序全局唯一的 App 实例，即 App 构造函数返回的对象
+
+Page({
+  data: {
+    username: 'nat',
+  },
+  tapHandler() {
+    this.setData({
+      // 1. 同步改变当前组件实例的username值
+      // 2. 异步发送一个更新请求到渲染线程（渲染线程对每个更新请求都单独处理，不会合并多个更新请求，当渲染线程正忙时，多出来的更新请求将排队等待）
+      username: 'jack',
+    })
+  },
+  onLoad() {},
+})
+```
+
+`index.wxss`
+
+```css
+/**index.wxss**/
+.indexContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: red;
+}
+.username {
+  color: black;
+}
+```
+
+`index.json`
+
+```json
+{
+  "navigationBarTitleText": "小程序的title",
+  "usingComponents": {} // 自定义组件注册列表，key组件名，value组件路径
+}
+```
+
+`/pages/demo2/demo2.js.json.wxml.wxss`: 同上，也可以是和目录名相同的四个文件
+
+`/utils/utils.js`: 一些工具方法，使用 cjs 的模块导出语法，其他 js 文件导入的时候也需要 cjs 的模块导入语法
+
+`/app.js`: 小程序启动的入口，执行`App({ ...options })`初始化小程序
+
+`/app.json`: 小程序的全局配置，比如【页面路由表】和【导航栏的颜色】
+
+`/app.wxss`: 小程序的全局样式
+
+`/project.config.json`: 项目配置文件
+
+`/project.private.config.json`: 私有项目配置文件，类似于.env.local
+
+`/sitemap.json`: 对微信小程序搜索平台的爬虫开放的信息，类似于网站的 robots.txt
+
 ## uniapp(vue2) 空模板项目
 
 `/pages/index/index.vue`: 普通页面，vue 单文件的`template`、`script`和`style`将生成对应的`.wxml`、`.js`和`.wxss`微信小程序文件
 
-`/main.js`: uniapp 的入口，定义 Vue 全局组件、过滤器、混入，安装插件，以及其他初始化操作，最终初始化 vue 实例
+`/main.js`: uniapp 的入口，定义 Vue 的全局组件、过滤器、混入，安装插件，以及其他初始化操作，最终初始化得到一个 vue 实例
 
 `/App.vue`: `script`的代码将当作微信小程序的 app.js，`style`的代码将当作微信小程序的 app.wxss
 
@@ -176,79 +249,6 @@ const createApp = (vueVm) => App(parseApp(vueVm))
 ```
 
 parseApp：得到符合 App 构造函数的配置项
-
-## 原生微信小程序的空模板目录
-
-`/pages/demo/index.js.json.wxml.wxss`: demo 页面的目录，都以 index 命名的四个文件：
-`index.wxml`
-
-```xml
-<!--index.wxml-->
-<view class="indexContainer">
-  <button bindtap="tapHandler">测试setData</button>
-</view>
-```
-
-`index.js`
-
-```js
-// index.js
-const app = getApp() // 得到小程序全局唯一的 App 实例，即 App 构造函数返回的对象
-
-Page({
-  data: {
-    username: 'nat',
-  },
-  tapHandler() {
-    this.setData({
-      // 1. 同步改变当前组件实例的username值
-      // 2. 异步发送一个更新请求到渲染线程（渲染线程对每个更新请求都单独处理，不会合并多个更新请求，当渲染线程正忙时，多出来的更新请求将排队等待）
-      username: 'jack',
-    })
-  },
-  onLoad() {},
-})
-```
-
-`index.wxss`
-
-```css
-/**index.wxss**/
-.indexContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: red;
-}
-.username {
-  color: black;
-}
-```
-
-`index.json`
-
-```json
-{
-  "navigationBarTitleText": "小程序的title",
-  "usingComponents": {} // 自定义组件注册列表，key组件名，value组件路径
-}
-```
-
-`/pages/demo2/demo2.js.json.wxml.wxss`: 同上，也可以是和目录名相同的四个文件
-
-`/utils/utils.js`: 一些工具方法，使用 cjs 模块语法
-
-`/app.js`: 小程序启动的入口，执行`App({ ...options })`初始化小程序
-
-`/app.json`: 小程序的全局配置，比如【页面路由表】和【导航栏的颜色】
-
-`/app.wxss`: 小程序的全局样式
-
-`/project.config.json`: 项目配置文件
-
-`/project.private.config.json`: 私有项目配置文件，类似于.env.local
-
-`/sitemap.json`: 对微信小程序搜索平台的爬虫开放的信息，类似于 robots.txt
 
 ## CSS scoped 的改变
 

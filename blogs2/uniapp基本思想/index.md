@@ -40,7 +40,7 @@ uniapp = 数据使用 vue 管理 + 视图依旧（也只能）由小程序管理
 
 uniapp = 编译时（将 vue 编写的项目转成符合微信小程序格式的项目） + 运行时（代理小程序的相关行为到对应的 vue 方法，比如代理小程序的事件和生命周期钩子）
 
-小程序的 setData 用法与 React 的 setState 相同，但是小程序的 setData 是同步的，每次 setData 都会触发一次更新，也就导致了连续多次的 setData 不会合并。
+小程序的 setData 用法与 React 的 setState 相同，**但是小程序的 setData 是同步地修改依赖**，同时异步地向渲染层发送一个更新请求，也就导致了连续多次的 setData 不会合并。
 
 一次 setData 的过程：
 
@@ -126,7 +126,7 @@ uniapp = 编译时（将 vue 编写的项目转成符合微信小程序格式的
 
 [See document.](./uniappVue2ToWX.md)
 
-## 开发原生 APP 的基本思想
+## 开发原生 APP 的基本思想（以安卓为例）
 
 uniapp 对原生 APP 支持方式：
 
@@ -140,5 +140,20 @@ displayWeex["渲染方式：weex"] --> weexDSL["weex语法，与vue相似"] --> 
 native["原生能力"]
 
 ```
+
+调试步骤：
+
+1. 下载【雷电安卓模拟器或其他模拟器】
+2. 运行模拟器
+3. 设置 HBuilder 的 adb.exe 路径为雷电模拟器目录下的 adb.exe，同时`.\adb.exe devices`执行 adb
+4. 执行 Hbuilder -> 运行 -> 运行到手机或模拟器 -> 下载真机运行插件
+5. 执行 Hbuilder -> 运行 -> 运行到手机或模拟器 -> 运行到 Android App 基座 -> 选择一个可用的模拟器或真机（需要打开 USB 调试）
+6. 默认为 webview 模式，可以 Hbuilder -> 运行 -> 运行到手机或模拟器 -> 显示 webview 调试控制台，使用 Chrome 的 devtools 进行高级调试
+7. 将.vue 改成.nvue(native vue)，此页面将由 weex 执行原生渲染，webview 渲染和 weex 渲染可以共存
+8. 调试 nvue 项目，执行控制台的 debug 图标（控制台左上方的一排按钮里）
+
+基座是什么？
+基座是一个 APP（特殊的 APP，一种提供某种运行时环境的 APP，类似于 AdobeAIR），它能帮助运行和调试 uniapp 项目，能对 webview 模式提供热更新功能。
+自定义基座，可以集成一些插件（JS 或原生）到运行时里面，供 uniapp 项目使用。
 
 **weex 就是 vue 版本的 ReactNative**。
