@@ -12,7 +12,7 @@
 
 6. [查看：uniapp基本思想](./uniapp基本思想/index.md)
 
-7. [查看：vite配置踩坑总结](./vite配置踩坑总结/index.md)
+7. [查看：vite相关](./vite相关/index.md)
 
 8. [查看：WebAssembly](./WebAssembly/index.md)
 
