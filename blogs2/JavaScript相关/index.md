@@ -6,19 +6,19 @@
 
 ## 类型转换
 
-TODO a new md doc
+[See document.](./%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2/index.md)
 
 ## Promise
 
-TODO a new md doc
+[See document.](./Promise/index.md)
 
 ## Generator
 
-TODO a new md doc
+[See document.](./Generator/index.md)
 
 ## 闭包
 
-TODO a new md doc
+[See document.](./%E9%97%AD%E5%8C%85/index.md)
 
 ## 字符编码
 
