@@ -252,7 +252,7 @@ parseApp：得到符合 App 构造函数的配置项
 
 ## CSS scoped 的改变
 
-改用`module.css`的风格，比如
+将唯一的哈希值从 dataset 移到 className，如下：
 
 ```css
 <style scoped>
@@ -262,12 +262,18 @@ parseApp：得到符合 App 构造函数的配置项
 </style>
 ```
 
-编译为
+编译为：
 
 ```css
 .foo.data-v-472cff63 {
   color: red;
 }
+```
+
+适用于：
+
+```html
+<view class="foo data-v-472cff63">hello</view>
 ```
 
 ## 自定义组件
